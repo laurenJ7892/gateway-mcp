@@ -1,0 +1,24 @@
+[project]
+name = "gateway"
+version = "0.1.0"
+description = "MCP server that counts words by splitting text on whitespace."
+readme = "README.md"
+authors = [
+    { email = "jarrett.lauren@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=2.3.0",
+]
+
+[project.scripts]
+gateway = "gateway:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.3",
+]
