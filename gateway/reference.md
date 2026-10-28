@@ -16,6 +16,7 @@ Start commands are in [Run the word counter](README.md).
   "properties": {
     "text": {
       "description": "Text to count. Words are split on whitespace.",
+      "maxLength": 100000,
       "type": "string"
     }
   },
@@ -23,7 +24,7 @@ Start commands are in [Run the word counter](README.md).
 }
 ```
 
-A call with `{"text": "one two three"}` returns `{"result": 3}` in `structured_content`. The `content` text is `3`. A call with empty text, or with text that is only whitespace, returns `{"result": 0}` in `structured_content`. The server rejects a missing `text`. The server also rejects a `text` that is not a string. In both cases, `count_words` does not run.
+A call with `{"text": "one two three"}` returns `{"result": 3}` in `structured_content`. The `content` text is `3`. A call with empty text, or with text that is only whitespace, returns `{"result": 0}` in `structured_content`. The server rejects a missing `text`. The server also rejects a `text` that is not a string, and a `text` longer than 100000 characters. `count_words` does not run in those cases.
 
 ## WordData
 

@@ -8,7 +8,7 @@ from mcp.shared.exceptions import MCPError
 
 from gateway.errors import GatewayError, too_many_calls
 from gateway.middleware import MaxConcurrentCalls, TimingLog
-from gateway.server import WordData, mcp
+from gateway.server import MAX_TEXT_LENGTH, WordData, mcp
 
 
 def _run(coro):
@@ -34,6 +34,29 @@ class CountWordsTests(unittest.TestCase):
             return result.structured_content
 
         self.assertEqual(_run(call()), {"result": 0})
+
+    def test_text_at_the_maximum_is_counted(self) -> None:
+        async def call() -> dict:
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "count_words", {"text": "a" * MAX_TEXT_LENGTH}
+                )
+            self.assertFalse(result.is_error)
+            return result.structured_content
+
+        self.assertEqual(_run(call()), {"result": 1})
+
+    def test_text_over_the_maximum_is_rejected(self) -> None:
+        async def call() -> None:
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "count_words", {"text": "a" * (MAX_TEXT_LENGTH + 1)}
+                )
+            self.assertTrue(result.is_error)
+            self.assertIsNone(result.structured_content)
+            self.assertIn("100000", result.content[0].text)
+
+        _run(call())
 
     def test_only_count_words_is_registered(self) -> None:
         async def names() -> set[str]:
