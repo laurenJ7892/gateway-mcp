@@ -1,23 +1,17 @@
 from typing import Annotated
 
 from mcp.server import MCPServer
-from middleware import MaxConcurrentCalls, TimingLog
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-# Characters, counted by len(text). Checked before split() builds a word list.
+from gateway.middleware import MaxConcurrentCalls, TimingLog
+
+# len(text) counts characters. max_length rejects a longer string before split().
 MAX_TEXT_LENGTH = 100_000
 
 mcp = MCPServer(
     "Word Counter",
     middleware=[TimingLog(), MaxConcurrentCalls(4)],
 )
-
-
-class WordData(BaseModel):
-    """Text and the word count of that text."""
-
-    text: str = Field(description="The text that was counted.")
-    word_count: int = Field(description="Words in the text, split on whitespace.")
 
 
 @mcp.tool()
@@ -31,8 +25,6 @@ def count_words(
     ],
 ) -> int:
     """Count words by splitting on whitespace."""
-    if isinstance(text, str) and len(text) > MAX_TEXT_LENGTH:
-        raise ValueError(f"text is longer than {MAX_TEXT_LENGTH} characters.")
     return len(text.strip().split())
 
 

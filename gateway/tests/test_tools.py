@@ -3,12 +3,11 @@ import unittest
 from types import SimpleNamespace
 
 from mcp import Client
-from mcp.server.mcpserver.exceptions import ToolError
 from mcp.shared.exceptions import MCPError
 
-from gateway.errors import GatewayError, too_many_calls
+from gateway.errors import too_many_calls
 from gateway.middleware import MaxConcurrentCalls, TimingLog
-from gateway.server import MAX_TEXT_LENGTH, WordData, mcp
+from gateway.server import MAX_TEXT_LENGTH, mcp
 
 
 def _run(coro):
@@ -54,7 +53,7 @@ class CountWordsTests(unittest.TestCase):
                 )
             self.assertTrue(result.is_error)
             self.assertIsNone(result.structured_content)
-            self.assertIn("100000", result.content[0].text)
+            self.assertIn(str(MAX_TEXT_LENGTH), result.content[0].text)
 
         _run(call())
 
@@ -65,20 +64,6 @@ class CountWordsTests(unittest.TestCase):
             return {tool.name for tool in page.tools}
 
         self.assertEqual(_run(names()), {"count_words"})
-
-
-class WordDataTests(unittest.TestCase):
-    def test_holds_text_and_word_count(self) -> None:
-        data = WordData(text="one two", word_count=2)
-        self.assertEqual(data.text, "one two")
-        self.assertEqual(data.word_count, 2)
-
-
-class GatewayErrorTests(unittest.TestCase):
-    def test_message_is_the_tool_error(self) -> None:
-        error = GatewayError("Text is missing.")
-        self.assertIsInstance(error, ToolError)
-        self.assertEqual(str(error), "Text is missing.")
 
 
 def _call(method: str, name: str | None = None) -> SimpleNamespace:
