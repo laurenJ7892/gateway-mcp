@@ -20,7 +20,7 @@ The client sent this request.
 
 ## Schema
 
-`count_words` requires one argument, `text`. The argument must be a string.
+`count_words` requires one argument, `text`. The argument must be a string of at most 100000 characters.
 
 ```json
 {
@@ -28,6 +28,7 @@ The client sent this request.
   "properties": {
     "text": {
       "description": "Text to count. Words are split on whitespace.",
+      "maxLength": 100000,
       "type": "string"
     }
   },
