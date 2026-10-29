@@ -53,7 +53,7 @@ class CountWordsTests(unittest.TestCase):
                 )
             self.assertTrue(result.is_error)
             self.assertIsNone(result.structured_content)
-            self.assertIn("100000", result.content[0].text)
+            self.assertIn(str(MAX_TEXT_LENGTH), result.content[0].text)
 
         _run(call())
 

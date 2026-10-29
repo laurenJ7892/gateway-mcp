@@ -24,8 +24,6 @@ def count_words(
     ],
 ) -> int:
     """Count words by splitting on whitespace."""
-    if isinstance(text, str) and len(text) > MAX_TEXT_LENGTH:
-        raise ValueError(f"text is longer than {MAX_TEXT_LENGTH} characters.")
     return len(text.strip().split())
 
 

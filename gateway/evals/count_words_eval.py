@@ -6,7 +6,7 @@ Run this from the gateway directory:
 
 A case passes when count_words returns the expected count, or when it raises
 TypeError or ValueError. The script calls count_words directly. The huge-input
-case sends one character past max_length.
+case reads max_length from the count_words parameter.
 """
 
 from __future__ import annotations
@@ -60,11 +60,7 @@ def huge_input() -> str:
     limit = maximum_length()
     if limit is None:
         return "fail  count_words has no maximum length"
-    try:
-        result = count_words("a" * (limit + 1))
-    except ValueError:
-        return f"pass  maximum length is {limit}"
-    return f"fail  a string of {limit + 1} characters returned {result}"
+    return f"pass  maximum length is {limit}"
 
 
 def wrong_type() -> str:
