@@ -14,12 +14,7 @@ from __future__ import annotations
 import socket
 import sys
 import urllib.request
-from pathlib import Path
 from typing import get_args, get_type_hints
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src" / "gateway"))
-sys.path.insert(0, str(ROOT / "src"))
 
 from gateway.server import count_words
 

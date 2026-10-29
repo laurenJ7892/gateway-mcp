@@ -8,9 +8,10 @@ from collections.abc import Mapping
 from typing import Any
 
 import anyio
-from errors import too_many_calls
 from mcp.server.context import CallNext, HandlerResult, ServerRequestContext
 from mcp.shared.exceptions import MCPError
+
+from gateway.errors import too_many_calls
 
 logger = logging.getLogger("gateway.middleware")
 

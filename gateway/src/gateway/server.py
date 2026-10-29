@@ -1,8 +1,9 @@
 from typing import Annotated
 
 from mcp.server import MCPServer
-from middleware import MaxConcurrentCalls, TimingLog
 from pydantic import Field
+
+from gateway.middleware import MaxConcurrentCalls, TimingLog
 
 # len(text) counts characters. max_length rejects a longer string before split().
 MAX_TEXT_LENGTH = 100_000
