@@ -14,7 +14,7 @@ from mcp.shared.exceptions import MCPError
 
 logger = logging.getLogger("gateway.middleware")
 
-# Implementation-defined JSON-RPC server error. The message is the caller-facing part.
+# Implementation-defined JSON-RPC server error. The caller reads this message.
 _TOO_MANY_CALLS = -32000
 _TOOL_CALL = "tools/call"
 

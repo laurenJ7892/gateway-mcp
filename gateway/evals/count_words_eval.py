@@ -4,8 +4,9 @@ Run this from the gateway directory:
 
     uv run python evals/count_words_eval.py
 
-A case passes when the call is safe. A rejection can pass. The script calls
-count_words directly. It does not send a giant string.
+A case passes when count_words returns the expected count, or when it raises
+TypeError or ValueError. The script calls count_words directly. The huge-input
+case sends one character past max_length.
 """
 
 from __future__ import annotations

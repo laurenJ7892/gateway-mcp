@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from gateway!")
+    print("Run python -m gateway.server to start the word counter.")
