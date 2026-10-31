@@ -4,9 +4,10 @@ Run this from the gateway directory:
 
     uv run python evals/count_words_eval.py
 
-A case passes when count_words returns the expected count, or when it raises
-TypeError or ValueError. The script calls count_words directly. The huge-input
-case reads max_length from the count_words parameter.
+A case passes when count_words returns the expected count, or when count_words
+raises TypeError or ValueError. count_words(4) raises TypeError. The script
+calls count_words directly. The huge-input case reads max_length from the
+count_words parameter.
 """
 
 from __future__ import annotations
@@ -38,14 +39,14 @@ def maximum_length() -> int | None:
 
 
 def empty_string() -> str:
-    result = count_words("")
+    result = count_words("").count
     if result == 0:
         return "pass  empty string returns 0"
     return f"fail  empty string returns {result}"
 
 
 def punctuation() -> str:
-    result = count_words(PUNCTUATION)
+    result = count_words(PUNCTUATION).count
     if result == 2:
         return f"pass  {PUNCTUATION!r} returns 2"
     return f"fail  {PUNCTUATION!r} returns {result}"
@@ -84,7 +85,7 @@ def prompt_injection() -> str:
     socket.create_connection = create_connection
     urllib.request.urlopen = urlopen
     try:
-        result = count_words(INJECTION)
+        result = count_words(INJECTION).count
     finally:
         socket.create_connection = real_create_connection
         urllib.request.urlopen = real_urlopen

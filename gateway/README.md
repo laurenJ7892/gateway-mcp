@@ -13,7 +13,7 @@ uv run python -m gateway.server
 
 `uv sync` installs the dependencies into `.venv`. The process waits on stdin for MCP messages.
 
-The tool, the errors, and the middleware are in [Word counter reference](reference.md).
+The tool, the errors, and the middleware are in [Word counter reference](reference.md). [Changelog](CHANGELOG.md) lists the changes to `count_words`.
 
 ## Run the tests
 
@@ -36,4 +36,4 @@ uv run ruff format
 
 `ruff format` rewrites each file that does not match the ruff format. When every file already matches, `ruff format` prints the count of files left unchanged and writes nothing.
 
-[First call](traces/first-call.md) records one `count_words` call and three failed calls.
+[First call](traces/first-call.md) records one `count_words` call and three failed calls on 27 October 2026. [Word count response](traces/word-count-response.md) records those calls again on 31 October 2026.

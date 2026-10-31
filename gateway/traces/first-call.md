@@ -1,6 +1,8 @@
 # First call
 
-An in-process MCP client recorded this trace on 27 October 2026. Every tool name in the trace came from that client. No model chose a tool.
+An in-process MCP client recorded this trace on 27 October 2026. Every tool name in this trace came from that client. No model chose a tool.
+
+[Word count response](word-count-response.md) records the same calls on 31 October 2026. In that file, `count_words` returned a `WordCount`.
 
 ## Tool choice
 

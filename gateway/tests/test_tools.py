@@ -14,6 +14,10 @@ def _run(coro):
     return asyncio.run(coro)
 
 
+def _count_text(count: int) -> str:
+    return f'{{\n  "count": {count}\n}}'
+
+
 class CountWordsTests(unittest.TestCase):
     def test_splits_on_whitespace(self) -> None:
         async def call() -> dict:
@@ -22,17 +26,20 @@ class CountWordsTests(unittest.TestCase):
                     "count_words", {"text": "  one\ttwo\nthree  "}
                 )
             self.assertFalse(result.is_error)
+            self.assertEqual(result.content[0].text, _count_text(3))
             return result.structured_content
 
-        self.assertEqual(_run(call()), {"result": 3})
+        self.assertEqual(_run(call()), {"count": 3})
 
     def test_empty_text_is_zero(self) -> None:
         async def call() -> dict:
             async with Client(mcp) as client:
                 result = await client.call_tool("count_words", {"text": "   \n"})
+            self.assertFalse(result.is_error)
+            self.assertEqual(result.content[0].text, _count_text(0))
             return result.structured_content
 
-        self.assertEqual(_run(call()), {"result": 0})
+        self.assertEqual(_run(call()), {"count": 0})
 
     def test_text_at_the_maximum_is_counted(self) -> None:
         async def call() -> dict:
@@ -41,9 +48,10 @@ class CountWordsTests(unittest.TestCase):
                     "count_words", {"text": "a" * MAX_TEXT_LENGTH}
                 )
             self.assertFalse(result.is_error)
+            self.assertEqual(result.content[0].text, _count_text(1))
             return result.structured_content
 
-        self.assertEqual(_run(call()), {"result": 1})
+        self.assertEqual(_run(call()), {"count": 1})
 
     def test_text_over_the_maximum_is_rejected(self) -> None:
         async def call() -> None:
@@ -64,6 +72,31 @@ class CountWordsTests(unittest.TestCase):
             return {tool.name for tool in page.tools}
 
         self.assertEqual(_run(names()), {"count_words"})
+
+    def test_output_schema_is_word_count(self) -> None:
+        async def schema() -> dict:
+            async with Client(mcp) as client:
+                page = await client.list_tools()
+            tool = next(tool for tool in page.tools if tool.name == "count_words")
+            return tool.output_schema
+
+        self.assertEqual(
+            _run(schema()),
+            {
+                "description": "How many words the text contains.",
+                "properties": {
+                    "count": {
+                        "description": "Words in the text, split on whitespace.",
+                        "minimum": 0,
+                        "title": "Count",
+                        "type": "integer",
+                    }
+                },
+                "required": ["count"],
+                "title": "WordCount",
+                "type": "object",
+            },
+        )
 
 
 def _call(method: str, name: str | None = None) -> SimpleNamespace:
