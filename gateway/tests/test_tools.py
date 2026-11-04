@@ -7,7 +7,15 @@ from mcp.shared.exceptions import MCPError
 
 from gateway.errors import too_many_calls
 from gateway.middleware import MaxConcurrentCalls, TimingLog
-from gateway.server import MAX_TEXT_LENGTH, mcp
+from gateway.server import (
+    COUNT_DESCRIPTION,
+    MAX_TEXT_LENGTH,
+    TEXT_DESCRIPTION,
+    TOOL_DESCRIPTION,
+    WORD_COUNT_DESCRIPTION,
+    count_words,
+    mcp,
+)
 
 
 def _run(coro):
@@ -65,6 +73,17 @@ class CountWordsTests(unittest.TestCase):
 
         _run(call())
 
+    def test_listed_descriptions_match_the_constants(self) -> None:
+        async def listed() -> tuple[str | None, str]:
+            async with Client(mcp) as client:
+                page = await client.list_tools()
+            tool = next(tool for tool in page.tools if tool.name == "count_words")
+            text = tool.input_schema["properties"]["text"]["description"]
+            return tool.description, text
+
+        self.assertEqual(_run(listed()), (TOOL_DESCRIPTION, TEXT_DESCRIPTION))
+        self.assertEqual(count_words.__doc__, TOOL_DESCRIPTION)
+
     def test_only_count_words_is_registered(self) -> None:
         async def names() -> set[str]:
             async with Client(mcp) as client:
@@ -83,10 +102,10 @@ class CountWordsTests(unittest.TestCase):
         self.assertEqual(
             _run(schema()),
             {
-                "description": "How many words the text contains.",
+                "description": WORD_COUNT_DESCRIPTION,
                 "properties": {
                     "count": {
-                        "description": "Words in the text, split on whitespace.",
+                        "description": COUNT_DESCRIPTION,
                         "minimum": 0,
                         "title": "Count",
                         "type": "integer",

@@ -10,7 +10,7 @@ Threat: `tools/list` returns the tool description and the argument description. 
 
 Measure: Treat the description as a label. A test fails when either string changes.
 
-Evaluation: Not applied yet. No test fails when either description string changes.
+Evaluation: Applied. The eval calls `tools/list` and compares each listed description with its constant. Cursor runs that eval when an agent turn stops. The hook does not send the listed string.
 
 Commit:
 
