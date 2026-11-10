@@ -10,8 +10,8 @@ Treat the description as a label. A test fails when either string changes. [001.
 
 ## Evaluation
 
-Applied. [server.py](../../src/gateway/server.py) names `TOOL_DESCRIPTION`, `TEXT_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. `@mcp.tool()` receives `TOOL_DESCRIPTION`. The `text` field uses `TEXT_DESCRIPTION`. `count_words.__doc__` is `TOOL_DESCRIPTION`. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) calls `tools/list` and compares each listed description with its constant. A failed line names the constant. Cursor runs that eval from [tool-description-eval.sh](../../../.cursor/hooks/tool-description-eval.sh) when an agent turn stops. The hook reports that the eval failed. The hook does not send the listed string. [tests/test_tools.py](../../tests/test_tools.py) compares the same strings.
+Applied. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) calls `tools/list` and compares each listed description with its constant. A failed line names the constant. Cursor runs that eval from [tool-description-eval.sh](../../../.cursor/hooks/tool-description-eval.sh) when an agent turn stops. On failure, the hook says that the eval failed and does not send the listed string.
 
 ## Server change
 
-[server.py](../../src/gateway/server.py) names both strings. `TOOL_DESCRIPTION` is the argument to `@mcp.tool()`. `TEXT_DESCRIPTION` is the description of `text`. [tests/test_tools.py](../../tests/test_tools.py) reads `description` and `input_schema` from `list_tools` and compares them with those names. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) makes that same `tools/list` call. Cursor calls the eval from [tool-description-eval.sh](../../../.cursor/hooks/tool-description-eval.sh).
+[server.py](../../src/gateway/server.py) names `TOOL_DESCRIPTION`, `TEXT_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. `@mcp.tool()` receives `TOOL_DESCRIPTION`. `count_words.__doc__` is that same string. The `text` field uses `TEXT_DESCRIPTION`. [tests/test_tools.py](../../tests/test_tools.py) compares `tools/list` and `count_words.__doc__` with those constants.

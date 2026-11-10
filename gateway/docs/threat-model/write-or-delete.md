@@ -6,7 +6,7 @@ A tool that writes a file or deletes a file changes the machine. `count_words` s
 
 ## Measure
 
-The server registers `count_words` only. The function returns a count. `tools/list` reports `readOnlyHint` true, `destructiveHint` false, and `openWorldHint` false. [001. Orchestration](../adr/001-orchestration.md) keeps the orchestrator on the tool the orchestrator names.
+The server registers `count_words` only. The function returns a count. `tools/list` reports `readOnlyHint` true, `destructiveHint` false, and `openWorldHint` false. [001. Orchestration](../adr/001-orchestration.md) records that the orchestrator calls `count_words` by name.
 
 ## Evaluation
 

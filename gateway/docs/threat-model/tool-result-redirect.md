@@ -12,7 +12,7 @@ The server counted the words in that argument. The current result is a `WordCoun
 
 ## Measure
 
-Return a `WordCount`. `content` and `structured_content` include no `text`. The server starts no tool call from the result. [001. Orchestration](../adr/001-orchestration.md) records why the client sees that result. The orchestrator reads the tool result.
+Return a `WordCount`. `content` and `structured_content` do not include `text`. The server starts no tool call from the result. [001. Orchestration](../adr/001-orchestration.md) records why the client sees that result. The orchestrator reads the tool result.
 
 ## Evaluation
 

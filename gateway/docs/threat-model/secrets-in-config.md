@@ -6,7 +6,7 @@ A token in a config file, the process environment, or a log line can leave the p
 
 ## Measure
 
-The logger writes no secret. `content` and `structured_content` hold no secret. The log line names the tool and the elapsed time. [001. Orchestration](../adr/001-orchestration.md) records that the orchestrator sends `text` on the call. A secret in `text` is part of that call.
+The log line names the tool and the elapsed time. A successful result is a `WordCount`. [001. Orchestration](../adr/001-orchestration.md) records that the orchestrator sends `text` on the call. A secret in `text` is part of that call.
 
 ## Evaluation
 

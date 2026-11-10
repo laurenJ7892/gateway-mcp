@@ -23,6 +23,43 @@ uv run python -m unittest discover -s tests -v
 
 The run ends with `OK` when every test passes.
 
+## Run the evals
+
+Run these commands in this directory.
+
+```bash
+uv run python evals/count_words_eval.py
+uv run python evals/tool_description_eval.py
+```
+
+### A passing run
+
+`uv run python evals/count_words_eval.py` prints these lines when every case passes. The process exits with status code 0.
+
+```text
+pass  empty string returns 0
+pass  'hello, world!' returns 2
+pass  maximum length is 100000
+pass  rejected an int with TypeError
+pass  injection returns 13 and opens no URL
+```
+
+`uv run python evals/tool_description_eval.py` exits with status code 0. The script prints a `pass` line for each description.
+
+### A failing run
+
+`empty_string` in `evals/count_words_eval.py` compared the count with 1 for the output below. The function compares the count with 0 again. The process exits with status code 1.
+
+```text
+fail  empty string returns 0
+pass  'hello, world!' returns 2
+pass  maximum length is 100000
+pass  rejected an int with TypeError
+pass  injection returns 13 and opens no URL
+```
+
+Recorded calls are in `traces/`. [First call](traces/first-call.md) is one `count_words` call.
+
 ## Lint and format
 
 Run these commands in this directory.

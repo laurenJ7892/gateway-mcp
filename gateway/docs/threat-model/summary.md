@@ -1,6 +1,6 @@
 # Summary
 
-Each file in this folder names one threat, one measure, one evaluation, and one server change. [template.md](template.md) sets that shape. This file records the measure, the evaluation, and the commit that adopts the measure. `Commit` is the subject line. `Date` is the commit date, written `YYYY-MM-DD`. `Commit` and `Date` stay empty until that commit exists. An ADR link belongs in the threat file.
+Each file in this folder names one threat, one measure, one evaluation, and one server change. [template.md](template.md) lists those four headings. This file records the measure, the evaluation, and the commit that adopts the measure. `Commit` is the subject line. `Date` is the commit date, written `YYYY-MM-DD`. `Commit` and `Date` stay empty until that commit exists. An ADR link belongs in the threat file.
 
 ## Untrusted tool descriptions
 
@@ -22,7 +22,7 @@ Date:
 
 Threat: A token in a config file, the process environment, or a log line can leave the process.
 
-Measure: The logger writes no secret. `content` and `structured_content` hold no secret.
+Measure: The log line names the tool and the elapsed time. A successful result is a `WordCount`.
 
 Evaluation: Applied for the config file, the environment, and the log line. A rejected argument can still appear in the tool error.
 
@@ -36,9 +36,9 @@ Date:
 
 Threat: A client that reads `content` as the next instruction can follow a tool result.
 
-Measure: Return a `WordCount`. `content` and `structured_content` include no `text`.
+Measure: Return a `WordCount`. `content` and `structured_content` do not include `text`.
 
-Evaluation: Applied. [tests/test_tools.py](../../tests/test_tools.py) has no `Client.call_tool` test of `content` yet.
+Evaluation: Applied for the `WordCount` result. [tests/test_tools.py](../../tests/test_tools.py) has no `Client.call_tool` test of `content` yet.
 
 Commit:
 
