@@ -7,15 +7,14 @@ from mcp.shared.exceptions import MCPError
 
 from gateway.errors import too_many_calls
 from gateway.middleware import MaxConcurrentCalls, TimingLog
-from gateway.server import (
+from gateway.server import mcp
+from gateway.tools.count_words import (
     COUNT_DESCRIPTION,
-    MAX_TEXT_LENGTH,
-    TEXT_DESCRIPTION,
-    TOOL_DESCRIPTION,
     WORD_COUNT_DESCRIPTION,
+    WORD_COUNT_TOOL_DESCRIPTION,
     count_words,
-    mcp,
 )
+from gateway.tools.text import MAX_TEXT_LENGTH, TEXT_DESCRIPTION
 
 
 def _run(coro):
@@ -81,16 +80,18 @@ class CountWordsTests(unittest.TestCase):
             text = tool.input_schema["properties"]["text"]["description"]
             return tool.description, text
 
-        self.assertEqual(_run(listed()), (TOOL_DESCRIPTION, TEXT_DESCRIPTION))
-        self.assertEqual(count_words.__doc__, TOOL_DESCRIPTION)
+        self.assertEqual(
+            _run(listed()), (WORD_COUNT_TOOL_DESCRIPTION, TEXT_DESCRIPTION)
+        )
+        self.assertEqual(count_words.__doc__, WORD_COUNT_TOOL_DESCRIPTION)
 
-    def test_only_count_words_is_registered(self) -> None:
+    def test_registered_tools(self) -> None:
         async def names() -> set[str]:
             async with Client(mcp) as client:
                 page = await client.list_tools()
             return {tool.name for tool in page.tools}
 
-        self.assertEqual(_run(names()), {"count_words"})
+        self.assertEqual(_run(names()), {"count_words", "most_common_word"})
 
     def test_output_schema_is_word_count(self) -> None:
         async def schema() -> dict:

@@ -1,5 +1,9 @@
 # Changelog
 
+## 11 November 2026
+
+The `text` argument description is `Words are split on whitespace.` The same description applies to every tool that takes `text`. `count_words` still says what it does in `WORD_COUNT_TOOL_DESCRIPTION`, `Count words by splitting on whitespace.`
+
 ## 31 October 2026
 
 `count_words` returns a `WordCount`. `count` is an integer with a minimum of 0. For `{"text": "one two three"}`, `structured_content` is `{"count": 3}`. The `content` text is `{`, a newline, two spaces, `"count": 3`, a newline, and `}`.

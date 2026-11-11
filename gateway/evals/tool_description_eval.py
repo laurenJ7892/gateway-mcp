@@ -7,7 +7,7 @@ agent turn stops. Run it by hand from the gateway directory:
 
 The script calls tools/list through the MCP client. That is the call Cursor
 makes when it lists tools. A case passes when each listed description equals
-the matching constant in server.py. A failed case names the constant. It does
+the matching constant in count_words.py or text.py. A failed case names the constant. It does
 not print the listed string.
 """
 
@@ -18,13 +18,13 @@ import sys
 
 from mcp import Client
 
-from gateway.server import (
+from gateway.server import mcp
+from gateway.tools.count_words import (
     COUNT_DESCRIPTION,
-    TEXT_DESCRIPTION,
-    TOOL_DESCRIPTION,
     WORD_COUNT_DESCRIPTION,
-    mcp,
+    WORD_COUNT_TOOL_DESCRIPTION,
 )
+from gateway.tools.text import TEXT_DESCRIPTION
 
 
 def matches(label: str, actual: object, expected: str) -> str:
@@ -73,7 +73,7 @@ async def checks() -> list[str]:
     if tool is None:
         return ["fail  count_words is not registered"]
     return [
-        matches("tool description", tool.description, TOOL_DESCRIPTION),
+        matches("tool description", tool.description, WORD_COUNT_TOOL_DESCRIPTION),
         text_description(tool.input_schema),
         *output_descriptions(tool.output_schema),
     ]

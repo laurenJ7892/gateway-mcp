@@ -1,6 +1,6 @@
 # Run the word counter
 
-`gateway` is an MCP server with one tool, `count_words`. You need Python 3.12. [uv](https://docs.astral.sh/uv/) installs the dependencies from `pyproject.toml` and `uv.lock`.
+`gateway` is an MCP server with two tools, `count_words` and `most_common_word`. You need Python 3.12. [uv](https://docs.astral.sh/uv/) installs the dependencies from `pyproject.toml` and `uv.lock`.
 
 ## Start the server
 

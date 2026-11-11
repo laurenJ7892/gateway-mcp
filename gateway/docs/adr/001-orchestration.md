@@ -26,7 +26,7 @@ The orchestrator calls `tools/list`, then `tools/call` with a tool name and argu
 
 `TimingLog` writes one line to the `gateway.middleware` logger. The line names the tool and the elapsed milliseconds.
 
-MCP does not send the function body. In this repo that body is `count_words` in [server.py](../../src/gateway/server.py). A remote MCP server does not send its source either. The orchestrator still sees every tool call.
+MCP does not send the function body. In this repo that body is `count_words` in [count_words.py](../../src/gateway/tools/count_words.py). A remote MCP server does not send its source either. The orchestrator still sees every tool call.
 
 The server rejects arguments that fail the schema. `count_words` does not run for those arguments. A tool can set `is_error` to true. `MaxConcurrentCalls(4)` rejects a fifth `tools/call` with JSON-RPC code `-32000` and the message `Too many calls are already running. The limit is 4.`
 

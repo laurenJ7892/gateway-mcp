@@ -2,7 +2,7 @@
 
 ## Threat
 
-`tools/list` returns the tool description and the argument description. A model can read those strings as instructions. [server.py](../../src/gateway/server.py) sets both strings for `count_words`. The tool description is `TOOL_DESCRIPTION`, `Count words by splitting on whitespace.` The `text` field description is `TEXT_DESCRIPTION`, `Text to count. Words are split on whitespace.` `tools/list` returns the string in either constant. The server lists the tool. The client chooses the tool. [First call](../../traces/first-call.md) records that choice.
+`tools/list` returns the tool description and the argument description. A model can read those strings as instructions. [count_words.py](../../src/gateway/tools/count_words.py) sets the tool description for `count_words`. The tool description is `WORD_COUNT_TOOL_DESCRIPTION`, `Count words by splitting on whitespace.` [text.py](../../src/gateway/tools/text.py) sets the `text` field description. That description is `TEXT_DESCRIPTION`, `Words are split on whitespace.` `tools/list` returns the string in either constant. The server lists the tool. The client chooses the tool. [First call](../../traces/first-call.md) records that choice.
 
 ## Measure
 
@@ -14,4 +14,4 @@ Applied. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) 
 
 ## Server change
 
-[server.py](../../src/gateway/server.py) names `TOOL_DESCRIPTION`, `TEXT_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. `@mcp.tool()` receives `TOOL_DESCRIPTION`. `count_words.__doc__` is that same string. The `text` field uses `TEXT_DESCRIPTION`. [tests/test_tools.py](../../tests/test_tools.py) compares `tools/list` and `count_words.__doc__` with those constants.
+[count_words.py](../../src/gateway/tools/count_words.py) names `WORD_COUNT_TOOL_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. [text.py](../../src/gateway/tools/text.py) names `TEXT_DESCRIPTION`. [server.py](../../src/gateway/server.py) passes `WORD_COUNT_TOOL_DESCRIPTION` to `mcp.tool()`. `count_words.__doc__` is that same string. The `text` field uses `TEXT_DESCRIPTION`. [tests/test_tools.py](../../tests/test_tools.py) compares `tools/list` and `count_words.__doc__` with those constants.

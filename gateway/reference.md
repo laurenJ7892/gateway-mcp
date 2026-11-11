@@ -1,10 +1,10 @@
 # Word counter reference
 
-The server registers one tool, `count_words`. The tool splits text on whitespace and returns a `WordCount`. The server uses the 2026-07-28 MCP protocol over stdio.
+The server registers two tools, `count_words` and `most_common_word`. `count_words` splits text on whitespace and returns a `WordCount`. `most_common_word` returns the most common word and how many times it appears. Empty text returns a count of 0 from both tools. The server uses the 2026-07-28 MCP protocol over stdio.
 
 Start commands are in [Run the word counter](README.md).
 
-`src/gateway/server.py` passes `[TimingLog(), MaxConcurrentCalls(4)]`. That list is outermost first. Both classes are defined in `src/gateway/middleware.py`.
+`src/gateway/server.py` passes `[TimingLog(), MaxConcurrentCalls(4)]`. That list is outermost first. Both classes are defined in `src/gateway/middleware.py`. `count_words` and `WordCount` are defined in `src/gateway/tools/count_words.py`. `most_common_word` and `MostCommonWord` are defined in `src/gateway/tools/most_common_word.py`. `MAX_TEXT_LENGTH` and the `text` description are defined in `src/gateway/tools/text.py`.
 
 ## Tool
 
@@ -15,7 +15,7 @@ Start commands are in [Run the word counter](README.md).
   "type": "object",
   "properties": {
     "text": {
-      "description": "Text to count. Words are split on whitespace.",
+      "description": "Words are split on whitespace.",
       "maxLength": 100000,
       "type": "string"
     }
