@@ -25,10 +25,19 @@ The run ends with `OK` when every test passes.
 
 ## Run the evals
 
-Run these commands in this directory.
+Run this command in this directory.
+
+```bash
+uv run python evals/run_evals.py
+```
+
+The runner prints each script's lines. The process exits with status code 1 when any script fails.
+
+Run one script on its own with these commands.
 
 ```bash
 uv run python evals/count_words_eval.py
+uv run python evals/most_common_word_eval.py
 uv run python evals/tool_description_eval.py
 ```
 
@@ -58,7 +67,7 @@ pass  rejected an int with TypeError
 pass  injection returns 13 and opens no URL
 ```
 
-Recorded calls are in `traces/`. [First call](traces/first-call.md) is one `count_words` call.
+Recorded calls are in `traces/`. [First call](traces/first-call.md) is one `count_words` call. [Most common word response](traces/most-common-word-response.md) is one `most_common_word` call.
 
 ## Lint and format
 
@@ -73,4 +82,4 @@ uv run ruff format
 
 `ruff format` rewrites each file that does not match the ruff format. When every file already matches, `ruff format` prints the count of files left unchanged and writes nothing.
 
-[First call](traces/first-call.md) records one `count_words` call and three failed calls on 27 October 2026. [Word count response](traces/word-count-response.md) records those calls again on 31 October 2026.
+[First call](traces/first-call.md) records one `count_words` call and three failed calls on 27 October 2026. [Word count response](traces/word-count-response.md) records those calls again on 31 October 2026. [Most common word response](traces/most-common-word-response.md) records one `most_common_word` call and three failed calls on 11 November 2026.

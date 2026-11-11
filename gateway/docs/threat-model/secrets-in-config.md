@@ -10,8 +10,8 @@ The log line names the tool and the elapsed time. A successful result is a `Word
 
 ## Evaluation
 
-Applied for the config file, the environment, and the log line. A rejected argument can still appear in the tool error. [First call](../../traces/first-call.md) records `input_value=4` in that error. [tests/test_tools.py](../../tests/test_tools.py) does not yet assert that the log line omits `sk-test-secret`.
+Applied for the config file, the environment, and the log line. A rejected argument can still appear in the tool error. [First call](../../traces/first-call.md) records `input_value=4` in that error. [tests/test_middleware.py](../../tests/test_middleware.py) does not yet assert that the log line omits `sk-test-secret`.
 
 ## Server change
 
-Add a test in [tests/test_tools.py](../../tests/test_tools.py). Call `tools/call` with `sk-test-secret` in the arguments. The `gateway.middleware` line for that call names the tool and the elapsed time. The line contains no `sk-test-secret`.
+Add a test in [tests/test_middleware.py](../../tests/test_middleware.py). Call `tools/call` with `sk-test-secret` in the arguments. The `gateway.middleware` line for that call names the tool and the elapsed time. The line contains no `sk-test-secret`.

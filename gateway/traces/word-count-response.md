@@ -2,7 +2,7 @@
 
 An in-process MCP client recorded this trace on 31 October 2026. `count_words` returned a `WordCount`. Every tool name in this trace came from that client. No model chose a tool.
 
-[First call](first-call.md) records the same calls on 27 October 2026. In that file, `structured_content` is `{"result": 3}`. The `content` text in that file is `3`.
+[First call](first-call.md) records the same calls on 27 October 2026. In that file, `structured_content` is `{"result": 3}`. The `content` text in that file is `3`. [Most common word response](most-common-word-response.md) records `most_common_word` calls on 11 November 2026.
 
 ## Tool choice
 

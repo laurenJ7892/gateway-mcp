@@ -10,7 +10,7 @@ Threat: `tools/list` returns the tool description and the argument description. 
 
 Measure: Treat the description as a label. A test fails when either string changes.
 
-Evaluation: Applied. The eval calls `tools/list` and compares each listed description with its constant. Cursor runs that eval when an agent turn stops. The hook does not send the listed string.
+Evaluation: Applied. The eval calls `tools/list` and compares each listed description with its constant. Cursor runs every eval when an agent turn stops. The hook does not send the listed string.
 
 Commit:
 
@@ -38,7 +38,7 @@ Threat: A client that reads `content` as the next instruction can follow a tool 
 
 Measure: Return a `WordCount`. `content` and `structured_content` do not include `text`.
 
-Evaluation: Applied for the `WordCount` result. [tests/test_tools.py](../../tests/test_tools.py) has no `Client.call_tool` test of `content` yet.
+Evaluation: Applied for the `WordCount` result. [tests/test_count_words.py](../../tests/test_count_words.py) has no `Client.call_tool` test of `content` yet.
 
 Commit:
 

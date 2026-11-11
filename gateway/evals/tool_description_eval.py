@@ -1,7 +1,8 @@
 """Checks the count_words descriptions that tools/list returns.
 
-Cursor runs this eval from .cursor/hooks/tool-description-eval.sh when an
-agent turn stops. Run it by hand from the gateway directory:
+Cursor runs every eval from .cursor/hooks/tool-description-eval.sh when an
+agent turn stops. That hook runs evals/run_evals.py. Run this eval by hand
+from the gateway directory:
 
     uv run python evals/tool_description_eval.py
 

@@ -57,4 +57,4 @@ The server returns a JSON-RPC error when 4 `tools/call` requests are already run
 
 ## Recorded calls
 
-[First call](traces/first-call.md) records the 27 October 2026 run. In that record, `structured_content` is `{"result": 3}`. [Word count response](traces/word-count-response.md) records the same calls on 31 October 2026. In that record, `structured_content` is `{"count": 3}`.
+[First call](traces/first-call.md) records the 27 October 2026 run. In that record, `structured_content` is `{"result": 3}`. [Word count response](traces/word-count-response.md) records the same calls on 31 October 2026. In that record, `structured_content` is `{"count": 3}`. [Most common word response](traces/most-common-word-response.md) records a `most_common_word` call on 11 November 2026. In that record, `structured_content` is `{"word": "one", "count": 2}`.

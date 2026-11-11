@@ -16,8 +16,8 @@ Return a `WordCount`. `content` and `structured_content` do not include `text`. 
 
 ## Evaluation
 
-Applied. `count_words` returns a `WordCount`. `WordCount` has no `text` field. [evals/count_words_eval.py](../../evals/count_words_eval.py) checks the count. The eval also checks that the call opens no URL. [tests/test_tools.py](../../tests/test_tools.py) has no `Client.call_tool` test of `content` yet.
+Applied. `count_words` returns a `WordCount`. `WordCount` has no `text` field. [evals/count_words_eval.py](../../evals/count_words_eval.py) checks the count. The eval also checks that the call opens no URL. [tests/test_count_words.py](../../tests/test_count_words.py) has no `Client.call_tool` test of `content` yet.
 
 ## Server change
 
-Add a `Client.call_tool` test in [tests/test_tools.py](../../tests/test_tools.py). Use the instruction string from [First call](../../traces/first-call.md) as `text`. Expect `structured_content` of `{"count": 13}`. Expect `content` and `structured_content` to contain neither `phone_home` nor `example.invalid`.
+Add a `Client.call_tool` test in [tests/test_count_words.py](../../tests/test_count_words.py). Use the instruction string from [First call](../../traces/first-call.md) as `text`. Expect `structured_content` of `{"count": 13}`. Expect `content` and `structured_content` to contain neither `phone_home` nor `example.invalid`.

@@ -10,8 +10,8 @@ Treat the description as a label. A test fails when either string changes. [001.
 
 ## Evaluation
 
-Applied. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) calls `tools/list` and compares each listed description with its constant. A failed line names the constant. Cursor runs that eval from [tool-description-eval.sh](../../../.cursor/hooks/tool-description-eval.sh) when an agent turn stops. On failure, the hook says that the eval failed and does not send the listed string.
+Applied. [evals/tool_description_eval.py](../../evals/tool_description_eval.py) calls `tools/list` and compares each listed description with its constant. A failed line names the constant. Cursor runs every eval from [tool-description-eval.sh](../../../.cursor/hooks/tool-description-eval.sh) when an agent turn stops. The hook runs [run_evals.py](../../evals/run_evals.py). On failure, the hook says that an eval failed and does not send the listed string.
 
 ## Server change
 
-[count_words.py](../../src/gateway/tools/count_words.py) names `WORD_COUNT_TOOL_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. [text.py](../../src/gateway/tools/text.py) names `TEXT_DESCRIPTION`. [server.py](../../src/gateway/server.py) passes `WORD_COUNT_TOOL_DESCRIPTION` to `mcp.tool()`. `count_words.__doc__` is that same string. The `text` field uses `TEXT_DESCRIPTION`. [tests/test_tools.py](../../tests/test_tools.py) compares `tools/list` and `count_words.__doc__` with those constants.
+[count_words.py](../../src/gateway/tools/count_words.py) names `WORD_COUNT_TOOL_DESCRIPTION`, `WORD_COUNT_DESCRIPTION`, and `COUNT_DESCRIPTION`. [text.py](../../src/gateway/tools/text.py) names `TEXT_DESCRIPTION`. [server.py](../../src/gateway/server.py) passes `WORD_COUNT_TOOL_DESCRIPTION` to `mcp.tool()`. `count_words.__doc__` is that same string. The `text` field uses `TEXT_DESCRIPTION`. [tests/test_count_words.py](../../tests/test_count_words.py) compares `tools/list` and `count_words.__doc__` with those constants.

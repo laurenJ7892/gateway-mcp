@@ -1,8 +1,20 @@
+import string
 from collections import Counter
 
 
+def filter_alpha_words(words: list[str]) -> list[str]:
+    kept: list[str] = []
+    for word in words:
+        without_punctuation = "".join(
+            character for character in word if character not in string.punctuation
+        )
+        if any(character.isalpha() for character in without_punctuation):
+            kept.append(without_punctuation)
+    return kept
+
+
 def split_words(text: str):
-    return text.strip().split()
+    return text.split()
 
 
 def split_text_count(split_text: list[str]) -> Counter[str]:
