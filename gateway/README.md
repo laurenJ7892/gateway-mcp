@@ -15,6 +15,18 @@ uv run python -m gateway.server
 
 The tool, the errors, and the middleware are in [Word counter reference](reference.md). [Changelog](CHANGELOG.md) lists the changes to `count_words`.
 
+## Accept a tool definition
+
+`PinGate` checks each `tools/call` against `pins.json`. The call runs when the tool name, the description, and the input schema match the pin. The call fails with `tool_definition_changed` when the definition differs, or when the tool has no pin.
+
+Run this command in this directory. The command builds the server, lists the tools, and writes `pins.json`.
+
+```bash
+uv run python -m gateway.pins accept count_words most_common_word
+```
+
+The command prints `accepted`, the tool name, and the hash. For a missing name such as `phone_home`, the command prints `phone_home is not listed` and exits with status code 1.
+
 ## Run the tests
 
 ```bash
@@ -48,13 +60,22 @@ uv run python evals/tool_definition_eval.py
 
 ```text
 pass  empty string returns 0
-pass  'hello, world!' returns 2
+pass 'hello, world!' returns 2
 pass  maximum length is 100000
 pass  rejected an int with TypeError
 pass  injection returns 13 and opens no URL
 ```
 
-`uv run python evals/tool_description_eval.py` exits with status code 0. The script prints a `pass` line for each description.
+`uv run python evals/tool_description_eval.py` exits with status code 0. The script prints a `pass` line for each description of `count_words` and of `most_common_word`.
+
+`uv run python evals/tool_definition_eval.py` prints these lines when every case passes. The process exits with status code 0.
+
+```text
+pass  count_words changed description blocked with tool_definition_changed
+pass  most_common_word changed description blocked with tool_definition_changed
+pass  count_words re-approved call allowed
+pass  most_common_word re-approved call allowed
+```
 
 ### A failing run
 
@@ -62,13 +83,13 @@ pass  injection returns 13 and opens no URL
 
 ```text
 fail  empty string returns 0
-pass  'hello, world!' returns 2
+pass 'hello, world!' returns 2
 pass  maximum length is 100000
 pass  rejected an int with TypeError
 pass  injection returns 13 and opens no URL
 ```
 
-Recorded calls are in `traces/`. [First call](traces/first-call.md) is one `count_words` call. [Most common word response](traces/most-common-word-response.md) is one `most_common_word` call.
+Recorded calls are in `traces/`. [First call](traces/first-call.md) records one `count_words` call and three failed calls on 27 October 2026. [Word count response](traces/word-count-response.md) records those calls again on 31 October 2026. [Most common word response](traces/most-common-word-response.md) records one `most_common_word` call and three failed calls on 11 November 2026.
 
 ## Lint and format
 
@@ -82,5 +103,3 @@ uv run ruff format
 `ruff check` prints `All checks passed!` when every check passes. When a check fails, `ruff check` exits with status code 1.
 
 `ruff format` rewrites each file that does not match the ruff format. When every file already matches, `ruff format` prints the count of files left unchanged and writes nothing.
-
-[First call](traces/first-call.md) records one `count_words` call and three failed calls on 27 October 2026. [Word count response](traces/word-count-response.md) records those calls again on 31 October 2026. [Most common word response](traces/most-common-word-response.md) records one `most_common_word` call and three failed calls on 11 November 2026.
