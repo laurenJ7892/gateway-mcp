@@ -1,9 +1,11 @@
 import asyncio
-import json
 import unittest
 
 from mcp import Client
+from mcp.shared.exceptions import MCPError
 
+from gateway.errors import needs_approval
+from gateway.middleware import NEEDS_APPROVAL_CODE
 from gateway.server import mcp
 from gateway.tools.most_common_word import (
     MOST_COMMON_COUNT_DESCRIPTION,
@@ -11,75 +13,23 @@ from gateway.tools.most_common_word import (
     MOST_COMMON_WORD_DESCRIPTION,
     most_common_word,
 )
-from gateway.tools.text import MAX_TEXT_LENGTH, TEXT_DESCRIPTION
+from gateway.tools.text import TEXT_DESCRIPTION
 
 
 def _run(coro):
     return asyncio.run(coro)
 
 
-def _result_text(word: str, count: int) -> str:
-    return f'{{\n  "word": {json.dumps(word)},\n  "count": {count}\n}}'
-
-
 class MostCommonWordTests(unittest.TestCase):
-    def test_returns_the_most_common_word(self) -> None:
-        async def call() -> dict:
-            async with Client(mcp) as client:
-                result = await client.call_tool(
-                    "most_common_word", {"text": "  one\ttwo\none  "}
-                )
-            self.assertFalse(result.is_error)
-            self.assertEqual(result.content[0].text, _result_text("one", 2))
-            return result.structured_content
-
-        self.assertEqual(_run(call()), {"word": "one", "count": 2})
-
-    def test_empty_text_has_no_word(self) -> None:
-        async def call() -> dict:
-            async with Client(mcp) as client:
-                result = await client.call_tool("most_common_word", {"text": "   \n"})
-            self.assertFalse(result.is_error)
-            self.assertEqual(result.content[0].text, _result_text("", 0))
-            return result.structured_content
-
-        self.assertEqual(_run(call()), {"word": "", "count": 0})
-
-    def test_tie_keeps_the_earliest_word(self) -> None:
-        async def call() -> dict:
-            async with Client(mcp) as client:
-                result = await client.call_tool(
-                    "most_common_word", {"text": "hello, world!"}
-                )
-            self.assertFalse(result.is_error)
-            self.assertEqual(result.content[0].text, _result_text("hello", 1))
-            return result.structured_content
-
-        self.assertEqual(_run(call()), {"word": "hello", "count": 1})
-
-    def test_text_at_the_maximum_is_accepted(self) -> None:
-        async def call() -> dict:
-            async with Client(mcp) as client:
-                result = await client.call_tool(
-                    "most_common_word", {"text": "a" * MAX_TEXT_LENGTH}
-                )
-            self.assertFalse(result.is_error)
-            self.assertEqual(
-                result.content[0].text, _result_text("a" * MAX_TEXT_LENGTH, 1)
-            )
-            return result.structured_content
-
-        self.assertEqual(_run(call()), {"word": "a" * MAX_TEXT_LENGTH, "count": 1})
-
-    def test_text_over_the_maximum_is_rejected(self) -> None:
+    def test_call_needs_human_approval(self) -> None:
         async def call() -> None:
             async with Client(mcp) as client:
-                result = await client.call_tool(
-                    "most_common_word", {"text": "a" * (MAX_TEXT_LENGTH + 1)}
-                )
-            self.assertTrue(result.is_error)
-            self.assertIsNone(result.structured_content)
-            self.assertIn(str(MAX_TEXT_LENGTH), result.content[0].text)
+                with self.assertRaises(MCPError) as caught:
+                    await client.call_tool(
+                        "most_common_word", {"text": "  one\ttwo\none  "}
+                    )
+            self.assertEqual(str(caught.exception), needs_approval("most_common_word"))
+            self.assertEqual(caught.exception.code, NEEDS_APPROVAL_CODE)
 
         _run(call())
 

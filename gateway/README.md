@@ -17,7 +17,7 @@ The tool, the errors, and the middleware are in [Word counter reference](referen
 
 ## Accept a tool definition
 
-`PinGate` checks each `tools/call` against `pins.json`. The call runs when the tool name, the description, and the input schema match the pin. The call fails with `tool_definition_changed` when the definition differs, or when the tool has no pin.
+`PinGate` checks each `tools/call` against `pins.json`. The pin is a hash of the tool name, the description, the input schema, and the output schema. The call runs when that hash matches. The call fails with `tool_definition_changed` when the definition differs. The call fails with `tool_not_pinned` when the tool has no pin. `count_words` runs with no extra approval. `most_common_word` fails with `most_common_word needs human approval.`
 
 Run this command in this directory. The command builds the server, lists the tools, and writes `pins.json`.
 

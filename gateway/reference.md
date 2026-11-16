@@ -4,7 +4,7 @@ The server registers two tools, `count_words` and `most_common_word`. `count_wor
 
 Start commands are in [Run the word counter](README.md).
 
-`src/gateway/server.py` passes `[TimingLog(), MaxConcurrentCalls(4)]`. That list is outermost first. Both classes are defined in `src/gateway/middleware.py`. `count_words` and `WordCount` are defined in `src/gateway/tools/count_words.py`. `most_common_word` and `MostCommonWord` are defined in `src/gateway/tools/most_common_word.py`. `MAX_TEXT_LENGTH` and the `text` description are defined in `src/gateway/tools/text.py`.
+`src/gateway/server.py` passes `[TimingLog(), PinGate, MaxConcurrentCalls(4), ApprovalGate]`. That list is outermost first. `count_words` has no approval step. `most_common_word` needs human approval. These classes are defined in `src/gateway/middleware.py`. `count_words` and `WordCount` are defined in `src/gateway/tools/count_words.py`. `most_common_word` and `MostCommonWord` are defined in `src/gateway/tools/most_common_word.py`. `MAX_TEXT_LENGTH` and the `text` description are defined in `src/gateway/tools/text.py`.
 
 ## Tool
 
@@ -49,11 +49,17 @@ A call with `{"text": "one two three"}` returns `{"count": 3}` in `structured_co
 
 The server returns a JSON-RPC error when 4 `tools/call` requests are already running. The JSON-RPC code is `-32000`. The message is `Too many calls are already running. The limit is 4.` `too_many_calls` in `src/gateway/errors.py` builds that message.
 
+`most_common_word` returns a JSON-RPC error. The code is `-32005`. The message is `most_common_word needs human approval.` `needs_approval` in `src/gateway/errors.py` builds that message.
+
 ## Middleware
 
 `TimingLog` writes one line to the `gateway.middleware` logger. The line names a tool call by the tool name. The line names any other message by its method. `TimingLog` prints the elapsed milliseconds to two decimal places. When `count_words` takes 0.48 milliseconds, `TimingLog` writes `count_words completed in 0.48ms`. If the call raises, `TimingLog` writes `failed`. `TimingLog` then re-raises the error.
 
+`PinGate` checks each `tools/call` against `pins.json`. The pin is a hash of the tool name, the description, the input schema, and the output schema. The call runs when that hash matches. A different hash returns `tool_definition_changed` with code `-32001`. A tool with no pin returns `tool_not_pinned` with code `-32002`. A pins file that is not valid JSON, or that is not an object, returns code `-32003`. A `PinGate` with no server returns `Pin gate has no server.` with code `-32004`. A name the server does not register proceeds to the next handler.
+
 `MaxConcurrentCalls(4)` counts `tools/call` requests that are still running. The server refuses the fifth call with code `-32000`. The middleware frees the slot when the call finishes. `tools/list` and other methods do not take a slot.
+
+`ApprovalGate` follows `MaxConcurrentCalls`. `count_words` proceeds. `most_common_word` raises `most_common_word needs human approval.` with code `-32005`. An unknown name proceeds to the next handler. The server returns `Unknown tool: phone_home` for that name.
 
 ## Recorded calls
 

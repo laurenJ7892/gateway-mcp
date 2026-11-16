@@ -19,8 +19,21 @@ from typing import Any
 
 logger = logging.getLogger("gateway.pins")
 
+
+class PinsFileError(Exception):
+    """The pins file is missing valid JSON, or it is not an object."""
+
+
 # The tools/call reason when the listed definition is not the pinned one.
 TOOL_DEFINITION_CHANGED = "tool_definition_changed"
+# The tools/call reason when the tool has no pin.
+TOOL_NOT_PINNED = "tool_not_pinned"
+
+# Distinct from the concurrency error -32000.
+DEFINITION_CHANGED_CODE = -32001
+NOT_PINNED_CODE = -32002
+PINS_FILE_CODE = -32003
+PIN_GATE_CODE = -32004
 
 # name, version, and hash, in that order, so the file stays easy to read.
 _PIN_KEYS = ("name", "version", "hash")
@@ -30,16 +43,18 @@ def definition_hash(
     name: str,
     description: str | None,
     input_schema: Mapping[str, Any],
+    output_schema: Mapping[str, Any] | None,
 ) -> str:
     """Hash one tool definition as SHA-256.
 
     The hashed text is JSON with sorted keys and no extra whitespace, so the
-    same name, description, and input schema always hash the same.
+    same name, description, input schema, and output schema always hash the same.
     """
     payload = {
         "name": name,
         "description": description,
         "input_schema": input_schema,
+        "output_schema": output_schema,
     }
     encoded = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -58,6 +73,7 @@ def approve_tool(
     name: str,
     description: str | None,
     input_schema: Mapping[str, Any],
+    output_schema: Mapping[str, Any] | None,
     version: str | None,
     replace: bool = False,
 ) -> dict[str, Any]:
@@ -74,7 +90,7 @@ def approve_tool(
     record = {
         "name": name,
         "version": version if version else None,
-        "hash": definition_hash(name, description, input_schema),
+        "hash": definition_hash(name, description, input_schema, output_schema),
     }
     pins[name] = {key: record[key] for key in _PIN_KEYS}
     _write_pins(path, pins)
@@ -87,34 +103,39 @@ def block_reason(
     name: str,
     description: str | None,
     input_schema: Mapping[str, Any],
+    output_schema: Mapping[str, Any] | None,
 ) -> str | None:
-    """Return `tool_definition_changed` when this tools/call must be blocked.
+    """Return a reason when this tools/call must be blocked.
 
     The current definition is hashed again. A hash equal to the pin allows
-    the call. A different hash, or no pin, blocks the call. The log line
-    names the old hash and the new hash.
+    the call. A different hash returns `tool_definition_changed`. No pin
+    returns `tool_not_pinned`. The log line names the old hash and the new hash.
     """
-    current = definition_hash(name, description, input_schema)
+    current = definition_hash(name, description, input_schema, output_schema)
     pinned = _pinned_hash(load_pins(path), name)
     if pinned == current:
         return None
+    reason = TOOL_NOT_PINNED if pinned is None else TOOL_DEFINITION_CHANGED
     logger.info(
         "%s %s old %s new %s",
         name,
-        TOOL_DEFINITION_CHANGED,
+        reason,
         pinned if pinned is not None else "none",
         current,
     )
-    return TOOL_DEFINITION_CHANGED
+    return reason
 
 
 def load_pins(path: Path) -> dict[str, Any]:
     """Read the pins file. A missing file has no pins."""
     if not path.exists():
         return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise PinsFileError(f"{path} is not valid JSON.") from exc
     if not isinstance(data, dict):
-        raise TypeError(f"{path} does not hold tool pins")
+        raise PinsFileError(f"{path} does not hold tool pins.")
     return data
 
 
@@ -155,6 +176,7 @@ async def _accept(path: Path, names: Sequence[str]) -> int:
                 name=tool.name,
                 description=tool.description,
                 input_schema=tool.input_schema,
+                output_schema=tool.output_schema,
                 version=version,
                 replace=True,
             )

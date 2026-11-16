@@ -102,6 +102,7 @@ async def _changed_description_after_approval(name: str, path: Path) -> str:
             name=tool.name,
             description=tool.description,
             input_schema=tool.input_schema,
+            output_schema=tool.output_schema,
             version=_server_version(client),
         )
         approved = tool.description
@@ -136,6 +137,7 @@ async def _reapproval_allows_the_call(name: str, path: Path) -> str:
             name=tool.name,
             description=tool.description,
             input_schema=tool.input_schema,
+            output_schema=tool.output_schema,
             version=_server_version(client),
         )
         rewrite_description(server, name, tool.description + POISON)
@@ -148,6 +150,7 @@ async def _reapproval_allows_the_call(name: str, path: Path) -> str:
             name=current.name,
             description=current.description,
             input_schema=current.input_schema,
+            output_schema=current.output_schema,
             version=_server_version(client),
             replace=True,
         )

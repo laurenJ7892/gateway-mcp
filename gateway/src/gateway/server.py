@@ -1,6 +1,6 @@
 from mcp.server import MCPServer
 
-from gateway.middleware import MaxConcurrentCalls, PinGate, TimingLog
+from gateway.middleware import ApprovalGate, MaxConcurrentCalls, PinGate, TimingLog
 from gateway.pins import default_pins_path
 from gateway.tools.count_words import WORD_COUNT_TOOL_DESCRIPTION, count_words
 from gateway.tools.most_common_word import (
@@ -12,7 +12,15 @@ pin_gate = PinGate(default_pins_path())
 mcp = MCPServer(
     "Word Counter",
     version="0.1.0",
-    middleware=[TimingLog(), pin_gate, MaxConcurrentCalls(4)],
+    middleware=[
+        TimingLog(),
+        pin_gate,
+        MaxConcurrentCalls(4),
+        ApprovalGate(
+            registered={"count_words", "most_common_word"},
+            no_approval={"count_words"},
+        ),
+    ],
 )
 pin_gate.server = mcp
 

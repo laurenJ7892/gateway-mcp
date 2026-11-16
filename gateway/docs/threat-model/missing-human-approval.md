@@ -10,10 +10,10 @@ Require approval for every registered tool except `count_words`. `count_words` r
 
 ## Evaluation
 
-Not applied yet. [server.py](../../src/gateway/server.py) lists `TimingLog` and `MaxConcurrentCalls`. The middleware list has no approval check. An unknown name still ends as `Unknown tool: phone_home`. The server returns that text when the tool name is missing.
+Applied. [server.py](../../src/gateway/server.py) lists `TimingLog`, `PinGate`, `MaxConcurrentCalls`, and `ApprovalGate`. `ApprovalGate` follows `MaxConcurrentCalls`. The no-approval set is `count_words`. The registered set is `count_words` and `most_common_word`. A `most_common_word` call raises `most_common_word needs human approval.` An unknown name still ends as `Unknown tool: phone_home`.
 
 ## Server change
 
-Add `ApprovalGate` in [middleware.py](../../src/gateway/middleware.py). List `ApprovalGate` after `MaxConcurrentCalls` in [server.py](../../src/gateway/server.py). Give the gate two sets. One set holds the tools that run with no approval. The other set holds the registered tools. Both sets start as `count_words`. On `tools/call`, `count_words` proceeds to the next handler. A registered name absent from the no-approval set raises `MCPError` with code `-32000`. `needs_approval` in [errors.py](../../src/gateway/errors.py) returns `{name} needs human approval.` Any other name proceeds to the next handler. The server still returns `Unknown tool: phone_home` for that name.
+Add `ApprovalGate` in [middleware.py](../../src/gateway/middleware.py). List `ApprovalGate` after `MaxConcurrentCalls` in [server.py](../../src/gateway/server.py). Give the gate two sets. The no-approval set is `count_words`. The registered set is `count_words` and `most_common_word`. On `tools/call`, `count_words` proceeds to the next handler. A registered name absent from the no-approval set raises `MCPError` with code `-32005`. `needs_approval` in [errors.py](../../src/gateway/errors.py) returns `{name} needs human approval.` Any other name proceeds to the next handler. The server still returns `Unknown tool: phone_home` for that name.
 
 Build the gate in a test with registered names `count_words` and `delete_file`, and with `count_words` in the no-approval set. The `delete_file` call raises. When `count_words` is the only registered name, the `phone_home` call proceeds to the next handler.

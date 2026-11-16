@@ -66,7 +66,7 @@ Threat: A registered tool that writes, deletes, or sends `text` would run throug
 
 Measure: Require approval for every registered tool except `count_words`. An unknown name still ends as `Unknown tool: phone_home`.
 
-Evaluation: Not applied yet. The middleware list has no approval check.
+Evaluation: Applied. `count_words` runs with no approval. `most_common_word` needs human approval. An unknown name still ends as `Unknown tool: phone_home`.
 
 Commit:
 
