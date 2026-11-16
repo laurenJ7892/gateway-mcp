@@ -1,10 +1,11 @@
-"""Timing and concurrency limits for inbound calls."""
+"""Timing, pin checks, and concurrency limits for inbound calls."""
 
 from __future__ import annotations
 
 import logging
 import time
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import anyio
@@ -12,6 +13,7 @@ from mcp.server.context import CallNext, HandlerResult, ServerRequestContext
 from mcp.shared.exceptions import MCPError
 
 from gateway.errors import too_many_calls
+from gateway.pins import block_reason
 
 logger = logging.getLogger("gateway.middleware")
 
@@ -36,6 +38,38 @@ class TimingLog:
             raise
         logger.info("%s completed in %.2fms", _subject(ctx), _elapsed_ms(started))
         return result
+
+
+class PinGate:
+    """Block a tools/call whose registered definition is not the saved pin.
+
+    Set `server` to the MCP server after it is constructed. A name that server
+    does not register proceeds to the next handler.
+    """
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.server: Any = None
+
+    async def __call__(
+        self,
+        ctx: ServerRequestContext[Any, Any],
+        call_next: CallNext,
+    ) -> HandlerResult:
+        if ctx.method != _TOOL_CALL:
+            return await call_next(ctx)
+        tool = _registered_tool(self.server, _tool_name(ctx))
+        if tool is None:
+            return await call_next(ctx)
+        reason = block_reason(
+            self.path,
+            name=tool.name,
+            description=tool.description,
+            input_schema=tool.parameters,
+        )
+        if reason is not None:
+            raise MCPError(_TOO_MANY_CALLS, reason)
+        return await call_next(ctx)
 
 
 class MaxConcurrentCalls:
@@ -67,10 +101,24 @@ class MaxConcurrentCalls:
                 self._active -= 1
 
 
-def _subject(ctx: ServerRequestContext[Any, Any]) -> str:
-    if ctx.method == _TOOL_CALL and isinstance(ctx.params, Mapping):
+def _tool_name(ctx: ServerRequestContext[Any, Any]) -> str | None:
+    if isinstance(ctx.params, Mapping):
         name = ctx.params.get("name")
         if isinstance(name, str) and name:
+            return name
+    return None
+
+
+def _registered_tool(server: Any, name: str | None) -> Any:
+    if server is None or name is None:
+        return None
+    return server._tool_manager.get_tool(name)
+
+
+def _subject(ctx: ServerRequestContext[Any, Any]) -> str:
+    if ctx.method == _TOOL_CALL:
+        name = _tool_name(ctx)
+        if name is not None:
             return name
     return ctx.method
 

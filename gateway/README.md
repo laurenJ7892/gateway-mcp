@@ -39,6 +39,7 @@ Run one script on its own with these commands.
 uv run python evals/count_words_eval.py
 uv run python evals/most_common_word_eval.py
 uv run python evals/tool_description_eval.py
+uv run python evals/tool_definition_eval.py
 ```
 
 ### A passing run

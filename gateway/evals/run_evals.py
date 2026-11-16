@@ -14,11 +14,13 @@ import sys
 
 import count_words_eval
 import most_common_word_eval
+import tool_definition_eval
 import tool_description_eval
 
 EVALS = (
     count_words_eval,
     most_common_word_eval,
+    tool_definition_eval,
     tool_description_eval,
 )
 
