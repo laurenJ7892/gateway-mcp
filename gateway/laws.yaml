@@ -1,0 +1,11 @@
+laws:
+  - id: read-only-mode
+    text: Read-only mode blocks a tool marked as writing. The check runs before the tool runs.
+    write: read_only_hint is not true. A tool with no annotations writes.
+    read: read_only_hint is true
+    on: tools/call
+    error_code: -32006
+    error_message: "{name} is blocked in read-only mode."
+    unknown_name: proceeds
+    eval: evals/read_only_eval.py
+    tests: tests/test_read_only.py

@@ -1,5 +1,6 @@
 import asyncio
 import unittest
+from pathlib import Path
 
 from mcp import Client
 from mcp.server import MCPServer
@@ -11,6 +12,7 @@ from gateway.middleware import READ_ONLY_CODE, ReadOnlyMode
 from gateway.tools.count_words import WORD_COUNT_TOOL_DESCRIPTION, count_words
 
 _ran: list[str] = []
+_LAWS = Path(__file__).resolve().parents[1] / "laws.yaml"
 
 
 def write_file() -> str:
@@ -159,6 +161,12 @@ class ReadOnlyTests(unittest.TestCase):
 
         self.assertEqual(_run(call()), {"count": 1})
         self.assertEqual(_ran, [])
+
+    def test_laws_yaml_records_read_only_mode(self) -> None:
+        text = _LAWS.read_text(encoding="utf-8")
+        self.assertIn("read-only-mode", text)
+        self.assertIn(str(READ_ONLY_CODE), text)
+        self.assertIn(writes_blocked("{name}"), text)
 
 
 if __name__ == "__main__":

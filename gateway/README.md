@@ -33,7 +33,7 @@ The command prints `accepted`, the tool name, and the hash. For a missing name s
 uv run python -m unittest discover -s tests -v
 ```
 
-The run ends with `OK` when every test passes.
+The run ends with `OK` when every test passes. `laws.yaml` records the read-only rule. The server does not read that file.
 
 ## Run the evals
 
