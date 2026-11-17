@@ -97,12 +97,12 @@ class PinGate:
 
 
 class ReadOnlyMode:
-    """Block a tools/call for a tool marked as writing.
+    """Block a tools/call when the tool writes.
 
     Set `server` to the MCP server after it is constructed. A tools/call
     before that set raises. A name that server does not register proceeds
-    to the next handler. A tool is marked as writing when `read_only_hint`
-    is not true. A missing annotation is the same as a write.
+    to the next handler. A tool writes when `read_only_hint` is not true.
+    A tool with no annotations writes.
     """
 
     def __init__(self) -> None:

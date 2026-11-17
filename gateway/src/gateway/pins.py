@@ -151,8 +151,8 @@ def load_pins(path: Path) -> dict[str, Any]:
 def _annotation_fields(annotations: Any) -> dict[str, Any] | None:
     """Return the annotation fields that the pin hashes.
 
-    None stays None. A mapping is copied. A model dumps every field,
-    including the unset ones, as JSON values.
+    None stays None. This function copies a mapping. `model_dump` returns
+    every field, including unset fields, as JSON values.
     """
     if annotations is None:
         return None

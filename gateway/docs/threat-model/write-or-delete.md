@@ -10,7 +10,7 @@ The server registers `count_words` and `most_common_word`. `count_words` returns
 
 ## Evaluation
 
-Applied. [server.py](../../src/gateway/server.py) passes `ToolAnnotations` with `read_only_hint` true, `destructive_hint` false, and `open_world_hint` false. `tools/list` reports those hints. `ReadOnlyMode` follows `PinGate`. A tool whose `read_only_hint` is not true raises `{name} is blocked in read-only mode.` with code `-32006` before the tool runs. [evals/read_only_eval.py](../../evals/read_only_eval.py) allows `count_words` and blocks `write_file`. [tests/test_read_only.py](../../tests/test_read_only.py) checks that series on a server whose only middleware is `ReadOnlyMode`. [tests/test_count_words.py](../../tests/test_count_words.py) reads the three hints from `list_tools`.
+Applied. [server.py](../../src/gateway/server.py) passes `ToolAnnotations` with `read_only_hint` true, `destructive_hint` false, and `open_world_hint` false. `tools/list` reports those hints. `ReadOnlyMode` follows `PinGate`. `ReadOnlyMode` raises `{name} is blocked in read-only mode.` with code `-32006` before the tool runs when `read_only_hint` is not true. [evals/read_only_eval.py](../../evals/read_only_eval.py) allows `count_words` and blocks `write_file`. [tests/test_read_only.py](../../tests/test_read_only.py) calls `count_words`, `write_file`, a tool with no annotations, and a tool whose `read_only_hint` is unset. The read runs. The other calls raise before the function runs. [tests/test_count_words.py](../../tests/test_count_words.py) reads the three hints from `list_tools`.
 
 ## Server change
 
