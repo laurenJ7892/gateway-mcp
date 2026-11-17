@@ -2,11 +2,11 @@
   "count_words": {
     "name": "count_words",
     "version": "0.1.0",
-    "hash": "c2127b350c9d0808af0666f888f51bb9d887084fdce5ec4b591438591caf052f"
+    "hash": "a85d4f844a52bc1aa107930d43e1d3d2f93c8a184cdca445bbf2d38fab7376e9"
   },
   "most_common_word": {
     "name": "most_common_word",
     "version": "0.1.0",
-    "hash": "067d1f69070ab1121c957a2da09ab574e871bd1d5e33dabbc8e405cc86012172"
+    "hash": "ded68bf47e58726f4f844020af1471b6737b6d5f5776681f55991312059e0e37"
   }
 }

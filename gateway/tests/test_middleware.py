@@ -7,13 +7,16 @@ from types import SimpleNamespace
 from mcp import Client
 from mcp.server import MCPServer
 from mcp.shared.exceptions import MCPError
+from mcp.types import ToolAnnotations
 
-from gateway.errors import needs_approval, too_many_calls
+from gateway.errors import needs_approval, too_many_calls, writes_blocked
 from gateway.middleware import (
     NEEDS_APPROVAL_CODE,
+    READ_ONLY_CODE,
     ApprovalGate,
     MaxConcurrentCalls,
     PinGate,
+    ReadOnlyMode,
     TimingLog,
 )
 from gateway.pins import (
@@ -144,6 +147,7 @@ class PinGateTests(unittest.TestCase):
                         input_schema=tool.input_schema,
                         output_schema=tool.output_schema,
                         version="0.1.0",
+                        annotations=tool.annotations,
                     )
                     allowed = await client.call_tool("count_words", {"text": "one"})
                     server._tool_manager.get_tool(
@@ -158,6 +162,41 @@ class PinGateTests(unittest.TestCase):
             self.assertTrue(unknown.is_error)
             self.assertIn("phone_home", unknown.content[0].text)
             self.assertNotIn(TOOL_DEFINITION_CHANGED, unknown.content[0].text)
+
+        _run(run())
+
+    def test_tools_call_blocks_a_changed_annotation(self) -> None:
+        async def run() -> None:
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "pins.json"
+                gate = PinGate(path)
+                server = MCPServer("Fake", version="0.1.0", middleware=[gate])
+                gate.server = server
+                server.tool(
+                    description=WORD_COUNT_TOOL_DESCRIPTION,
+                    annotations=ToolAnnotations(read_only_hint=True),
+                )(count_words)
+                async with Client(server) as client:
+                    page = await client.list_tools()
+                    tool = page.tools[0]
+                    approve_tool(
+                        path,
+                        name=tool.name,
+                        description=tool.description,
+                        input_schema=tool.input_schema,
+                        output_schema=tool.output_schema,
+                        version="0.1.0",
+                        annotations=tool.annotations,
+                    )
+                    allowed = await client.call_tool("count_words", {"text": "one"})
+                    server._tool_manager.get_tool(
+                        "count_words"
+                    ).annotations = ToolAnnotations(read_only_hint=False)
+                    with self.assertRaises(MCPError) as caught:
+                        await client.call_tool("count_words", {"text": "one"})
+            self.assertFalse(allowed.is_error)
+            self.assertEqual(str(caught.exception), TOOL_DEFINITION_CHANGED)
+            self.assertEqual(caught.exception.code, DEFINITION_CHANGED_CODE)
 
         _run(run())
 
@@ -204,6 +243,7 @@ class PinGateTests(unittest.TestCase):
                             description="Count words.",
                             parameters={"type": "object"},
                             output_schema={"type": "object"},
+                            annotations=None,
                         )
                     )
                 )
@@ -247,6 +287,97 @@ class ApprovalGateTests(unittest.TestCase):
             self.assertEqual(
                 await gate(_call("tools/call", "phone_home"), call_next), "next"
             )
+
+        _run(run())
+
+
+def _marked(name: str, read_only_hint: bool) -> SimpleNamespace:
+    return SimpleNamespace(
+        name=name,
+        annotations=SimpleNamespace(read_only_hint=read_only_hint),
+    )
+
+
+def _tool_server(**tools: SimpleNamespace) -> SimpleNamespace:
+    return SimpleNamespace(
+        _tool_manager=SimpleNamespace(get_tool=lambda name: tools.get(name))
+    )
+
+
+class ReadOnlyModeTests(unittest.TestCase):
+    def test_read_calls_the_next_handler(self) -> None:
+        gate = ReadOnlyMode()
+        gate.server = _tool_server(count_words=_marked("count_words", True))
+
+        async def call_next(ctx: SimpleNamespace) -> str:
+            return "done"
+
+        async def run() -> None:
+            self.assertEqual(
+                await gate(_call("tools/call", "count_words"), call_next),
+                "done",
+            )
+
+        _run(run())
+
+    def test_write_does_not_run(self) -> None:
+        gate = ReadOnlyMode()
+        gate.server = _tool_server(write_file=_marked("write_file", False))
+
+        async def call_next(ctx: SimpleNamespace) -> str:
+            return "done"
+
+        async def run() -> None:
+            with self.assertRaises(MCPError) as caught:
+                await gate(_call("tools/call", "write_file"), call_next)
+            self.assertEqual(str(caught.exception), writes_blocked("write_file"))
+            self.assertEqual(caught.exception.code, READ_ONLY_CODE)
+
+        _run(run())
+
+    def test_missing_annotation_is_a_write(self) -> None:
+        gate = ReadOnlyMode()
+        gate.server = _tool_server(
+            count_words=SimpleNamespace(name="count_words", annotations=None)
+        )
+
+        async def call_next(ctx: SimpleNamespace) -> str:
+            return "done"
+
+        async def run() -> None:
+            with self.assertRaises(MCPError) as caught:
+                await gate(_call("tools/call", "count_words"), call_next)
+            self.assertEqual(str(caught.exception), writes_blocked("count_words"))
+            self.assertEqual(caught.exception.code, READ_ONLY_CODE)
+
+        _run(run())
+
+    def test_unknown_name_proceeds(self) -> None:
+        gate = ReadOnlyMode()
+        gate.server = _tool_server(count_words=_marked("count_words", True))
+
+        async def call_next(ctx: SimpleNamespace) -> str:
+            return "next"
+
+        async def run() -> None:
+            self.assertEqual(
+                await gate(_call("tools/call", "phone_home"), call_next),
+                "next",
+            )
+
+        _run(run())
+
+    def test_unset_server_blocks_the_call(self) -> None:
+        gate = ReadOnlyMode()
+
+        async def call_next(ctx: SimpleNamespace) -> str:
+            return "done"
+
+        async def run() -> None:
+            with self.assertRaises(MCPError) as caught:
+                await gate(_call("tools/call", "write_file"), call_next)
+            self.assertEqual(str(caught.exception), "Read-only mode has no server.")
+            self.assertEqual(caught.exception.code, READ_ONLY_CODE)
 
         _run(run())
 

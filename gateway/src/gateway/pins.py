@@ -44,17 +44,20 @@ def definition_hash(
     description: str | None,
     input_schema: Mapping[str, Any],
     output_schema: Mapping[str, Any] | None,
+    annotations: Any = None,
 ) -> str:
     """Hash one tool definition as SHA-256.
 
-    The hashed text is JSON with sorted keys and no extra whitespace, so the
-    same name, description, input schema, and output schema always hash the same.
+    The hashed text is JSON with sorted keys and no extra whitespace. The
+    JSON holds the name, the description, the input schema, the output
+    schema, and the annotations.
     """
     payload = {
         "name": name,
         "description": description,
         "input_schema": input_schema,
         "output_schema": output_schema,
+        "annotations": _annotation_fields(annotations),
     }
     encoded = json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -75,6 +78,7 @@ def approve_tool(
     input_schema: Mapping[str, Any],
     output_schema: Mapping[str, Any] | None,
     version: str | None,
+    annotations: Any = None,
     replace: bool = False,
 ) -> dict[str, Any]:
     """Save this tool the first time it is approved.
@@ -90,7 +94,9 @@ def approve_tool(
     record = {
         "name": name,
         "version": version if version else None,
-        "hash": definition_hash(name, description, input_schema, output_schema),
+        "hash": definition_hash(
+            name, description, input_schema, output_schema, annotations
+        ),
     }
     pins[name] = {key: record[key] for key in _PIN_KEYS}
     _write_pins(path, pins)
@@ -104,6 +110,7 @@ def block_reason(
     description: str | None,
     input_schema: Mapping[str, Any],
     output_schema: Mapping[str, Any] | None,
+    annotations: Any = None,
 ) -> str | None:
     """Return a reason when this tools/call must be blocked.
 
@@ -111,7 +118,9 @@ def block_reason(
     the call. A different hash returns `tool_definition_changed`. No pin
     returns `tool_not_pinned`. The log line names the old hash and the new hash.
     """
-    current = definition_hash(name, description, input_schema, output_schema)
+    current = definition_hash(
+        name, description, input_schema, output_schema, annotations
+    )
     pinned = _pinned_hash(load_pins(path), name)
     if pinned == current:
         return None
@@ -137,6 +146,19 @@ def load_pins(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise PinsFileError(f"{path} does not hold tool pins.")
     return data
+
+
+def _annotation_fields(annotations: Any) -> dict[str, Any] | None:
+    """Return the annotation fields that the pin hashes.
+
+    None stays None. A mapping is copied. A model dumps every field,
+    including the unset ones, as JSON values.
+    """
+    if annotations is None:
+        return None
+    if isinstance(annotations, Mapping):
+        return dict(annotations)
+    return annotations.model_dump(mode="json")
 
 
 def _pinned_hash(pins: Mapping[str, Any], name: str) -> str | None:
@@ -178,6 +200,7 @@ async def _accept(path: Path, names: Sequence[str]) -> int:
                 input_schema=tool.input_schema,
                 output_schema=tool.output_schema,
                 version=version,
+                annotations=tool.annotations,
                 replace=True,
             )
             print(f"accepted {saved['name']} {saved['hash']}")

@@ -52,7 +52,7 @@ Threat: A tool that writes a file or deletes a file changes the machine.
 
 Measure: The server registers `count_words` and `most_common_word`. `tools/list` reports `readOnlyHint` true, `destructiveHint` false, and `openWorldHint` false.
 
-Evaluation: Applied for the registered tool. The read-only hints are not applied yet.
+Evaluation: Applied. `ReadOnlyMode` blocks a tool whose `read_only_hint` is not true before the tool runs. `tools/list` reports `readOnlyHint` true, `destructiveHint` false, and `openWorldHint` false.
 
 Commit:
 

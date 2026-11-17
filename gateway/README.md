@@ -17,7 +17,7 @@ The tool, the errors, and the middleware are in [Word counter reference](referen
 
 ## Accept a tool definition
 
-`PinGate` checks each `tools/call` against `pins.json`. The pin is a hash of the tool name, the description, the input schema, and the output schema. The call runs when that hash matches. The call fails with `tool_definition_changed` when the definition differs. The call fails with `tool_not_pinned` when the tool has no pin. `count_words` runs with no extra approval. `most_common_word` fails with `most_common_word needs human approval.`
+`PinGate` checks each `tools/call` against `pins.json`. The pin is a hash of the tool name, the description, the input schema, the output schema, and the annotations. The call runs when that hash matches. The call fails with `tool_definition_changed` when the definition differs. The call fails with `tool_not_pinned` when the tool has no pin. `count_words` runs with no extra approval. `most_common_word` fails with `most_common_word needs human approval.`
 
 Run this command in this directory. The command builds the server, lists the tools, and writes `pins.json`.
 
@@ -50,6 +50,7 @@ Run one script on its own with these commands.
 ```bash
 uv run python evals/count_words_eval.py
 uv run python evals/most_common_word_eval.py
+uv run python evals/read_only_eval.py
 uv run python evals/tool_description_eval.py
 uv run python evals/tool_definition_eval.py
 ```
@@ -75,6 +76,13 @@ pass  count_words changed description blocked with tool_definition_changed
 pass  most_common_word changed description blocked with tool_definition_changed
 pass  count_words re-approved call allowed
 pass  most_common_word re-approved call allowed
+```
+
+`uv run python evals/read_only_eval.py` prints these lines when every case passes. The process exits with status code 0.
+
+```text
+pass  count_words allowed in read-only mode
+pass  write_file blocked in read-only mode
 ```
 
 ### A failing run

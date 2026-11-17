@@ -1,4 +1,4 @@
-"""Timing, pin checks, approval, and concurrency limits for inbound calls."""
+"""Timing, pin checks, read-only mode, approval, and concurrency limits."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import anyio
 from mcp.server.context import CallNext, HandlerResult, ServerRequestContext
 from mcp.shared.exceptions import MCPError
 
-from gateway.errors import needs_approval, too_many_calls
+from gateway.errors import needs_approval, too_many_calls, writes_blocked
 from gateway.pins import (
     DEFINITION_CHANGED_CODE,
     NOT_PINNED_CODE,
@@ -30,6 +30,7 @@ logger = logging.getLogger("gateway.middleware")
 # Each failure has its own code.
 _TOO_MANY_CALLS = -32000
 NEEDS_APPROVAL_CODE = -32005
+READ_ONLY_CODE = -32006
 _PIN_CODES = {
     TOOL_DEFINITION_CHANGED: DEFINITION_CHANGED_CODE,
     TOOL_NOT_PINNED: NOT_PINNED_CODE,
@@ -86,11 +87,42 @@ class PinGate:
                 description=tool.description,
                 input_schema=tool.parameters,
                 output_schema=tool.output_schema,
+                annotations=tool.annotations,
             )
         except PinsFileError as exc:
             raise MCPError(PINS_FILE_CODE, str(exc)) from exc
         if reason is not None:
             raise MCPError(_PIN_CODES[reason], reason)
+        return await call_next(ctx)
+
+
+class ReadOnlyMode:
+    """Block a tools/call for a tool marked as writing.
+
+    Set `server` to the MCP server after it is constructed. A tools/call
+    before that set raises. A name that server does not register proceeds
+    to the next handler. A tool is marked as writing when `read_only_hint`
+    is not true. A missing annotation is the same as a write.
+    """
+
+    def __init__(self) -> None:
+        self.server: Any = None
+
+    async def __call__(
+        self,
+        ctx: ServerRequestContext[Any, Any],
+        call_next: CallNext,
+    ) -> HandlerResult:
+        if ctx.method != _TOOL_CALL:
+            return await call_next(ctx)
+        if self.server is None:
+            raise MCPError(READ_ONLY_CODE, "Read-only mode has no server.")
+        name = _tool_name(ctx)
+        tool = _registered_tool(self.server, name)
+        if tool is None:
+            return await call_next(ctx)
+        if _writes(tool):
+            raise MCPError(READ_ONLY_CODE, writes_blocked(tool.name))
         return await call_next(ctx)
 
 
@@ -155,6 +187,13 @@ def _registered_tool(server: Any, name: str | None) -> Any:
     if name is None:
         return None
     return server._tool_manager.get_tool(name)
+
+
+def _writes(tool: Any) -> bool:
+    annotations = tool.annotations
+    if annotations is None:
+        return True
+    return annotations.read_only_hint is not True
 
 
 def _subject(ctx: ServerRequestContext[Any, Any]) -> str:

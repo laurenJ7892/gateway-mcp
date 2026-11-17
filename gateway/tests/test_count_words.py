@@ -89,6 +89,29 @@ class CountWordsTests(unittest.TestCase):
 
         self.assertEqual(_run(names()), {"count_words", "most_common_word"})
 
+    def test_listed_hints_are_read_only(self) -> None:
+        async def listed() -> dict[str, tuple[object, object, object, object]]:
+            async with Client(mcp) as client:
+                page = await client.list_tools()
+            found: dict[str, tuple[object, object, object, object]] = {}
+            for tool in page.tools:
+                annotations = tool.annotations
+                self.assertIsNotNone(annotations)
+                assert annotations is not None
+                found[tool.name] = (
+                    annotations.read_only_hint,
+                    annotations.destructive_hint,
+                    annotations.open_world_hint,
+                    annotations.idempotent_hint,
+                )
+            return found
+
+        hints = (True, False, False, None)
+        self.assertEqual(
+            _run(listed()),
+            {"count_words": hints, "most_common_word": hints},
+        )
+
     def test_output_schema_is_word_count(self) -> None:
         async def schema() -> dict:
             async with Client(mcp) as client:

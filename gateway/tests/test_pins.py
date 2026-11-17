@@ -21,12 +21,14 @@ def _canonical(
     description: str | None,
     input_schema: dict,
     output_schema: dict | None = None,
+    annotations: dict | None = None,
 ) -> str:
     payload = {
         "name": name,
         "description": description,
         "input_schema": input_schema,
         "output_schema": output_schema,
+        "annotations": annotations,
     }
     return json.dumps(
         payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -42,7 +44,7 @@ class DefinitionHashTests(unittest.TestCase):
         encoded = _canonical("count_words", "Count words.", schema)
         self.assertEqual(
             encoded,
-            '{"description":"Count words.","input_schema":{"properties":{"text":{"type":"string"}},"type":"object"},"name":"count_words","output_schema":null}',
+            '{"annotations":null,"description":"Count words.","input_schema":{"properties":{"text":{"type":"string"}},"type":"object"},"name":"count_words","output_schema":null}',
         )
         digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -85,6 +87,19 @@ class DefinitionHashTests(unittest.TestCase):
         )
 
         self.assertNotEqual(original, changed)
+
+    def test_annotation_change_changes_the_hash(self) -> None:
+        schema = {"type": "object"}
+        read_only = {"read_only_hint": True, "destructive_hint": False}
+        writes = {"read_only_hint": False, "destructive_hint": False}
+        original = definition_hash(
+            "count_words", "Count words.", schema, None, read_only
+        )
+        changed = definition_hash("count_words", "Count words.", schema, None, writes)
+        missing = definition_hash("count_words", "Count words.", schema, None, None)
+
+        self.assertNotEqual(original, changed)
+        self.assertNotEqual(original, missing)
 
 
 class ApproveToolTests(unittest.TestCase):
